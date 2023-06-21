@@ -11,8 +11,8 @@ class GetWeatherController extends BaseController
 {
     use AuthorizesRequests, ValidatesRequests;
 
-    public function __invoke(): \GuzzleHttp\Promise\PromiseInterface|\Illuminate\Http\Client\Response
+    public function __invoke()
     {
-        return (new GetWeatherService())->make();
+        return (new GetWeatherService())->make()->json();
     }
 }
