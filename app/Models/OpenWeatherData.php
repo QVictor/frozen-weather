@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class OpenWeatherData extends Model
 {
@@ -20,4 +21,9 @@ class OpenWeatherData extends Model
         'Clear',
         'Clouds',
     ];
+
+    public function city():BelongsTo
+    {
+        return $this->belongsTo(OpenWeatherData::class);
+    }
 }
