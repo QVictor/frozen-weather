@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Repositories\Interfaces\CityRepositoryInterface;
 use App\Services\GetWeatherService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Validation\ValidatesRequests;
@@ -11,8 +12,8 @@ class GetWeatherController extends BaseController
 {
     use AuthorizesRequests, ValidatesRequests;
 
-    public function __invoke()
+    public function __invoke(CityRepositoryInterface $cityRepository)
     {
-        return (new GetWeatherService())->make()->json();
+        return (new GetWeatherService())->make($cityRepository);
     }
 }
