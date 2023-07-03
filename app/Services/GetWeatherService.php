@@ -2,29 +2,30 @@
 
 namespace App\Services;
 
+use App\Helpers\CityHelper;
 use App\Models\OpenWeatherData;
 use App\Repositories\Interfaces\CityRepositoryInterface;
-use GuzzleHttp\Promise\PromiseInterface;
-use Illuminate\Http\Client\Response;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Http;
 
 class GetWeatherService
 {
     /**
      * Return weather list for current day
      *
-     * @return PromiseInterface|Response
+     * @param CityRepositoryInterface $cityRepository
+     * @return void
      */
-    public function make(CityRepositoryInterface $cityRepository)
+    public function make(CityRepositoryInterface $cityRepository): void
     {
-        $cities = $cityRepository->getAllListCodes()->pluck('open_weather_city_id');
-        $apiAnswer = Http::get('https://api.openweathermap.org/data/2.5/group?id=' . $cities->implode(',') . '&units=metric&appid=' . env('OPEN_WEATHER_API_KEY'));
-        $jsonString = $apiAnswer->getBody()->getContents();
-        $jsonCollection = collect(json_decode($jsonString, true));
+        $cities = CityHelper::getAllCodes($cityRepository);
+        $apiAnswer = (new OpenWeatherService())->getCurrentWeatherData($cities);
+        OpenWeatherData::insert($this->prepareDataFromInsert($apiAnswer));
+    }
 
+    private function prepareDataFromInsert($apiAnswer): array
+    {
         $res = [];
-        foreach ($jsonCollection->get('list') as $city) {
+        foreach ($apiAnswer['list'] as $city) {
             $res[] = [
                 'city_id' => $city['id'],
                 'weather_condition_code' => $city['weather'][0]['id'],
@@ -38,7 +39,6 @@ class GetWeatherService
                 'updated_at' => Carbon::createFromTimestamp($city['dt']),
             ];
         }
-        OpenWeatherData::insert($res);
         return $res;
     }
 
